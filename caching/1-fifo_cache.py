@@ -14,7 +14,8 @@ class FIFOCache(BaseCaching):
 
     if key in self.cache_data:
         self.cache_data[key] = item
-        self.order.remove(key)
+        if key in self.order:
+            self.order.remove(key)
         self.order.append(key)
         return
 
@@ -27,8 +28,10 @@ class FIFOCache(BaseCaching):
     self.order.append(key)
 
 
+
     def get(self, key):
         if key is None:
             return None
         return self.cache_data.get(key)
+
 
