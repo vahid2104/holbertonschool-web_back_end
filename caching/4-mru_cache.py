@@ -8,7 +8,7 @@ from base_caching import BaseCaching
 
 class MRUCache(BaseCaching):
     """
-    MRUCache class inherits from BaseCaching
+    MRUCache class that inherits from BaseCaching
     Implements Most Recently Used (MRU) caching
     """
 
@@ -30,16 +30,15 @@ class MRUCache(BaseCaching):
             self.cache_data[key] = item
             self.order.remove(key)
             self.order.append(key)
-            return
+        else:
+            if len(self.cache_data) >= BaseCaching.MAX_ITEMS:
+                # Remove MRU item (last in order list)
+                mru_key = self.order.pop(-1)
+                del self.cache_data[mru_key]
+                print(f"DISCARD: {mru_key}")
 
-        if len(self.cache_data) >= BaseCaching.MAX_ITEMS:
-            # Discard MRU item
-            mru_key = self.order.pop(-1)
-            del self.cache_data[mru_key]
-            print(f"DISCARD: {mru_key}")
-
-        self.cache_data[key] = item
-        self.order.append(key)
+            self.cache_data[key] = item
+            self.order.append(key)
 
     def get(self, key):
         """
