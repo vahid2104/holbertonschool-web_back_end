@@ -21,7 +21,7 @@ class FIFOCache(BaseCaching):
             # Remove the first inserted item
             fifo_key = self.order.pop(0)
             del self.cache_data[fifo_key]
-            print("DISCARD: {}".format(fifo_key))
+            print(f"DISCARD: {fifo_key}")  # shorter than 79 chars
 
         if key not in self.cache_data:
             self.order.append(key)
