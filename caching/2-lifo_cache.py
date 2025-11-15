@@ -6,7 +6,7 @@ from base_caching import BaseCaching
 class LIFOCache(BaseCaching):
     def __init__(self):
         super().__init__()
-        self.last_key = None
+        self.order = []
 
     def put(self, key, item):
         if key is None or item is None:
@@ -14,18 +14,22 @@ class LIFOCache(BaseCaching):
 
         if key in self.cache_data:
             self.cache_data[key] = item
-            self.last_key = key
+            if key in self.order:
+                self.order.remove(key)
+            self.order.append(key)
             return
 
         if len(self.cache_data) >= BaseCaching.MAX_ITEMS:
-            if self.last_key is not None:
-                print("DISCARD: {}".format(self.last_key))
-                del self.cache_data[self.last_key]
+            last_key = self.order.pop(-1)
+            del self.cache_data[last_key]
+            print("DISCARD: {}".format(last_key))
 
         self.cache_data[key] = item
-        self.last_key = key
+        self.order.append(key)
 
     def get(self, key):
         if key is None:
             return None
         return self.cache_data.get(key)
+
+
