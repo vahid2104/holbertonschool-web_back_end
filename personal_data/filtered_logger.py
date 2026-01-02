@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
-"""Utilities for redacting sensitive fields from log messages."""
+"""Utilities for redacting sensitive fields and connecting to a database."""
 
 import logging
+import os
 import re
 from typing import List, Tuple
+
+import mysql.connector
+from mysql.connector.connection import MySQLConnection
 
 
 PII_FIELDS: Tuple[str, str, str, str, str] = (
@@ -61,7 +65,24 @@ def get_logger() -> logging.Logger:
     logger.setLevel(logging.INFO)
     logger.propagate = False
     logger.handlers = []
+
     handler = logging.StreamHandler()
     handler.setFormatter(RedactingFormatter(list(PII_FIELDS)))
     logger.addHandler(handler)
+
     return logger
+
+
+def get_db() -> MySQLConnection:
+    """Return a MySQLConnection using environment variables."""
+    username = os.getenv("PERSONAL_DATA_DB_USERNAME", "root")
+    password = os.getenv("PERSONAL_DATA_DB_PASSWORD", "")
+    host = os.getenv("PERSONAL_DATA_DB_HOST", "localhost")
+    db_name = os.getenv("PERSONAL_DATA_DB_NAME")
+
+    return mysql.connector.connect(
+        user=username,
+        password=password,
+        host=host,
+        database=db_name
+    )
