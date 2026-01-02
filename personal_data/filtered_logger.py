@@ -64,13 +64,13 @@ def get_logger() -> logging.Logger:
     logger = logging.getLogger("user_data")
     logger.setLevel(logging.INFO)
     logger.propagate = False
+    logger.handlers = []
 
     handler = logging.StreamHandler()
     handler.setFormatter(RedactingFormatter(list(PII_FIELDS)))
     logger.addHandler(handler)
 
     return logger
-
 
 
 def get_db() -> MySQLConnection:
@@ -86,6 +86,3 @@ def get_db() -> MySQLConnection:
         host=host,
         database=db_name
     )
-
-
-
