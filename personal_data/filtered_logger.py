@@ -7,7 +7,6 @@ import re
 from typing import List, Tuple
 
 import mysql.connector
-from mysql.connector.connection import MySQLConnection
 
 
 PII_FIELDS: Tuple[str, str, str, str, str] = (
@@ -64,8 +63,7 @@ def get_logger() -> logging.Logger:
     logger = logging.getLogger("user_data")
     logger.setLevel(logging.INFO)
     logger.propagate = False
-    logger.handlers = []
-
+    if not logger.handlers:
     handler = logging.StreamHandler()
     handler.setFormatter(RedactingFormatter(list(PII_FIELDS)))
     logger.addHandler(handler)
@@ -73,7 +71,7 @@ def get_logger() -> logging.Logger:
     return logger
 
 
-def get_db() -> MySQLConnection:
+def get_db() -> mysql.connector.connection.MySQLConnection:
     """Return a MySQLConnection using environment variables."""
     username = os.getenv("PERSONAL_DATA_DB_USERNAME", "root")
     password = os.getenv("PERSONAL_DATA_DB_PASSWORD", "")
@@ -86,3 +84,4 @@ def get_db() -> MySQLConnection:
         host=host,
         database=db_name
     )
+
