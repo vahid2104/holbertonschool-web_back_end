@@ -1,20 +1,14 @@
 #!/usr/bin/env python3
-"""Utilities for secure password hashing and verification with bcrypt."""
+"""Password hashing and validation module using bcrypt."""
 
 import bcrypt
 
 
-def generate_password_hash(raw_password: str) -> bytes:
-    """
-    Generate and return a bcrypt hash from a plain text password.
-    """
-    password_bytes = raw_password.encode("utf-8")
-    salt = bcrypt.gensalt()
-    return bcrypt.hashpw(password_bytes, salt)
+def hash_password(password: str) -> bytes:
+    """Return a salted, hashed password as bytes."""
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt())
 
 
-def verify_password(stored_hash: bytes, candidate_password: str) -> bool:
-    """
-    Verify whether the provided password corresponds to the stored hash.
-    """
-    return bcrypt.checkpw(candidate_password.encode("utf-8"), stored_hash)
+def is_valid(hashed_password: bytes, password: str) -> bool:
+    """Check if a password matches the hashed password."""
+    return bcrypt.checkpw(password.encode(), hashed_password)
