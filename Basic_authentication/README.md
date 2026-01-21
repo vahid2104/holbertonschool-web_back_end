@@ -1,42 +1,110 @@
-# Simple API
+# Basic Authentication API
 
-Simple HTTP API for playing with `User` model.
+## Description
+This project is part of the Holberton School Web Back-End curriculum.  
+The goal of this project is to understand and implement **Basic Authentication**
+on a simple REST API built with **Flask**.
 
+The authentication system is implemented step by step for learning purposes.
+In real-world applications, authentication frameworks or libraries should be used
+instead of building a custom solution.
 
-## Files
+---
 
-### `models/`
+## Learning Objectives
+By the end of this project, you should be able to explain:
 
-- `base.py`: base of all models of the API - handle serialization to file
-- `user.py`: user model
+- What authentication is
+- What Basic Authentication is
+- What Base64 encoding is
+- How to send authorization headers
+- How to protect API routes using authentication
+- How to handle HTTP error codes (401, 403)
 
-### `api/v1`
+---
 
-- `app.py`: entry point of the API
-- `views/index.py`: basic endpoints of the API: `/status` and `/stats`
-- `views/users.py`: all users endpoints
+## Project Structure
+Basic_authentication/
+├── api/
+│ └── v1/
+│ ├── app.py
+│ ├── views/
+│ │ ├── index.py
+│ │ └── users.py
+│ └── auth/
+│ ├── init.py
+│ ├── auth.py
+│ └── basic_auth.py
+├── models/
+│ └── user.py
+├── requirements.txt
+└── README.md
 
+yaml
+Copy code
 
-## Setup
+---
 
-```
-$ pip3 install -r requirements.txt
-```
+## Authentication Flow
+1. Requests are intercepted using Flask `before_request`
+2. Public routes are excluded from authentication
+3. For protected routes:
+   - Missing `Authorization` header → **401 Unauthorized**
+   - Invalid credentials → **403 Forbidden**
+4. When credentials are valid, the request proceeds normally
 
+---
 
-## Run
+## Error Handling
+The API implements custom error handlers:
 
-```
-$ API_HOST=0.0.0.0 API_PORT=5000 python3 -m api.v1.app
-```
+- **401 Unauthorized**
+```json
+{
+  "error": "Unauthorized"
+}
+403 Forbidden
 
+json
+Copy code
+{
+  "error": "Forbidden"
+}
+Environment Variables
+Variable	Description
+API_HOST	API host (e.g. 0.0.0.0)
+API_PORT	API port (e.g. 5000)
+AUTH_TYPE	Authentication type (auth or basic_auth)
 
-## Routes
+Running the API
+bash
+Copy code
+API_HOST=0.0.0.0 API_PORT=5000 AUTH_TYPE=basic_auth python3 -m api.v1.app
+Example Requests
+Public endpoint
+bash
+Copy code
+curl http://0.0.0.0:5000/api/v1/status
+Protected endpoint (no auth)
+bash
+Copy code
+curl http://0.0.0.0:5000/api/v1/users
+Protected endpoint (Basic Auth)
+bash
+Copy code
+curl http://0.0.0.0:5000/api/v1/users \
+  -H "Authorization: Basic <base64(email:password)>"
+Technologies Used
+Python 3
 
-- `GET /api/v1/status`: returns the status of the API
-- `GET /api/v1/stats`: returns some stats of the API
-- `GET /api/v1/users`: returns the list of users
-- `GET /api/v1/users/:id`: returns an user based on the ID
-- `DELETE /api/v1/users/:id`: deletes an user based on the ID
-- `POST /api/v1/users`: creates a new user (JSON parameters: `email`, `password`, `last_name` (optional) and `first_name` (optional))
-- `PUT /api/v1/users/:id`: updates an user based on the ID (JSON parameters: `last_name` and `first_name`)
+Flask
+
+Flask-CORS
+
+Base64
+
+pycodestyle
+
+Author
+Vahid
+Holberton School Student
