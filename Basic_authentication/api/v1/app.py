@@ -25,13 +25,13 @@ elif auth_type == "auth":
 
 @app.errorhandler(401)
 def unauthorized(error):
-    """Unauthorized error handler"""
+    """Unauthorized error"""
     return jsonify({"error": "Unauthorized"}), 401
 
 
 @app.errorhandler(403)
 def forbidden(error):
-    """Forbidden error handler"""
+    """Forbidden error"""
     return jsonify({"error": "Forbidden"}), 403
 
 
@@ -58,6 +58,8 @@ def before_request():
 
 
 if __name__ == "__main__":
-    host = getenv("API_HOST", "0.0.0.0")
-    port = getenv("API_PORT", 5000)
-    app.run(host=host, port=port, threaded=True)
+    app.run(
+        host=getenv("API_HOST", "0.0.0.0"),
+        port=getenv("API_PORT", 5000),
+        threaded=True
+    )
