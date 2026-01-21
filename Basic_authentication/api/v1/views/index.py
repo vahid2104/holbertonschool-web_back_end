@@ -14,3 +14,9 @@ def status():
 def unauthorized():
     """Unauthorized endpoint"""
     abort(401)
+
+
+@app_views.route('/forbidden', methods=['GET'], strict_slashes=False)
+def forbidden():
+    """Forbidden endpoint"""
+    abort(403)
