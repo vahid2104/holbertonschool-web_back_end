@@ -30,7 +30,7 @@ def forbidden(error):
 
 @app.before_request
 def before_request_handler():
-    """Filters requests before processing"""
+    """Handles authentication before each request"""
     if auth is None:
         return
 
