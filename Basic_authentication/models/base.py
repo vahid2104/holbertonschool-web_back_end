@@ -2,7 +2,7 @@
 """ Base module
 """
 from datetime import datetime
-from typing import TypeVar, List, Iterable
+from typing import TypeVar, List
 from os import path
 import json
 import uuid
@@ -19,19 +19,25 @@ class Base():
     def __init__(self, *args: list, **kwargs: dict):
         """ Initialize a Base instance
         """
-        s_class = str(self.__class__.__name__)
+        s_class = self.__class__.__name__
         if DATA.get(s_class) is None:
             DATA[s_class] = {}
 
         self.id = kwargs.get('id', str(uuid.uuid4()))
+
         if kwargs.get('created_at') is not None:
-            self.created_at = datetime.strptime(kwargs.get('created_at'),
-                                                TIMESTAMP_FORMAT)
+            self.created_at = datetime.strptime(
+                kwargs.get('created_at'),
+                TIMESTAMP_FORMAT
+            )
         else:
             self.created_at = datetime.utcnow()
+
         if kwargs.get('updated_at') is not None:
-            self.updated_at = datetime.strptime(kwargs.get('updated_at'),
-                                                TIMESTAMP_FORMAT)
+            self.updated_at = datetime.strptime(
+                kwargs.get('updated_at'),
+                TIMESTAMP_FORMAT
+            )
         else:
             self.updated_at = datetime.utcnow()
 
@@ -42,16 +48,16 @@ class Base():
             return False
         if not isinstance(self, Base):
             return False
-        return (self.id == other.id)
+        return self.id == other.id
 
     def to_json(self, for_serialization: bool = False) -> dict:
-        """ Convert the object a JSON dictionary
+        """ Convert the object to a JSON dictionary
         """
         result = {}
         for key, value in self.__dict__.items():
             if not for_serialization and key[0] == '_':
                 continue
-            if type(value) is datetime:
+            if isinstance(value, datetime):
                 result[key] = value.strftime(TIMESTAMP_FORMAT)
             else:
                 result[key] = value
@@ -64,10 +70,11 @@ class Base():
         s_class = cls.__name__
         file_path = ".db_{}.json".format(s_class)
         DATA[s_class] = {}
+
         if not path.exists(file_path):
             return
 
-        with open(file_path, 'r') as f:
+        with open(file_path, 'r', encoding='utf-8') as f:
             objs_json = json.load(f)
             for obj_id, obj_json in objs_json.items():
                 DATA[s_class][obj_id] = cls(**obj_json)
@@ -78,11 +85,15 @@ class Base():
         """
         s_class = cls.__name__
         file_path = ".db_{}.json".format(s_class)
+
+        if DATA.get(s_class) is None:
+            DATA[s_class] = {}
+
         objs_json = {}
         for obj_id, obj in DATA[s_class].items():
             objs_json[obj_id] = obj.to_json(True)
 
-        with open(file_path, 'w') as f:
+        with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(objs_json, f)
 
     def save(self):
@@ -90,6 +101,10 @@ class Base():
         """
         s_class = self.__class__.__name__
         self.updated_at = datetime.utcnow()
+
+        if DATA.get(s_class) is None:
+            DATA[s_class] = {}
+
         DATA[s_class][self.id] = self
         self.__class__.save_to_file()
 
@@ -97,6 +112,10 @@ class Base():
         """ Remove object
         """
         s_class = self.__class__.__name__
+
+        if DATA.get(s_class) is None:
+            DATA[s_class] = {}
+
         if DATA[s_class].get(self.id) is not None:
             del DATA[s_class][self.id]
             self.__class__.save_to_file()
@@ -106,11 +125,18 @@ class Base():
         """ Count all objects
         """
         s_class = cls.__name__
-        return len(DATA[s_class].keys())
+
+        if DATA.get(s_class) is None or len(DATA[s_class]) == 0:
+            try:
+                cls.load_from_file()
+            except Exception:
+                DATA[s_class] = {}
+
+        return len(DATA.get(s_class, {}).keys())
 
     @classmethod
-    def all(cls) -> Iterable[TypeVar('Base')]:
-        """ Return all objects
+    def all(cls):
+        """ Return all objects of the class
         """
         return cls.search()
 
@@ -119,19 +145,36 @@ class Base():
         """ Return one object by ID
         """
         s_class = cls.__name__
-        return DATA[s_class].get(id)
+
+        if DATA.get(s_class) is None or len(DATA[s_class]) == 0:
+            try:
+                cls.load_from_file()
+            except Exception:
+                DATA[s_class] = {}
+
+        return DATA.get(s_class, {}).get(id)
 
     @classmethod
-    def search(cls, attributes: dict = {}) -> List[TypeVar('Base')]:
+    def search(cls, attributes: dict = None) -> List[TypeVar('Base')]:
         """ Search all objects with matching attributes
         """
+        if attributes is None:
+            attributes = {}
+
         s_class = cls.__name__
+
+        if DATA.get(s_class) is None or len(DATA[s_class]) == 0:
+            try:
+                cls.load_from_file()
+            except Exception:
+                DATA[s_class] = {}
+
         def _search(obj):
             if len(attributes) == 0:
                 return True
             for k, v in attributes.items():
-                if (getattr(obj, k) != v):
+                if getattr(obj, k, None) != v:
                     return False
             return True
-        
-        return list(filter(_search, DATA[s_class].values()))
+
+        return list(filter(_search, DATA.get(s_class, {}).values()))
