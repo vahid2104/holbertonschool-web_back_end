@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Flask application
+"""Flask app
 """
 from flask import Flask, jsonify, abort, request
 from flask_cors import CORS
@@ -9,7 +9,6 @@ from api.v1.views import app_views
 
 app = Flask(__name__)
 app.register_blueprint(app_views)
-
 CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
 
 auth = None
@@ -25,19 +24,22 @@ elif auth_type == "auth":
 
 @app.errorhandler(401)
 def unauthorized(error):
-    """Unauthorized error"""
+    """401 handler
+    """
     return jsonify({"error": "Unauthorized"}), 401
 
 
 @app.errorhandler(403)
 def forbidden(error):
-    """Forbidden error"""
+    """403 handler
+    """
     return jsonify({"error": "Forbidden"}), 403
 
 
 @app.before_request
 def before_request():
-    """Filter requests"""
+    """Filter requests
+    """
     if auth is None:
         return
 
@@ -57,13 +59,10 @@ def before_request():
     if user is None:
         abort(403)
 
-    # 🔴 BU SƏTİR OLMADAN TEST KEÇMİR
     request.current_user = user
 
 
 if __name__ == "__main__":
-    app.run(
-        host=getenv("API_HOST", "0.0.0.0"),
-        port=getenv("API_PORT", 5000),
-        threaded=True
-    )
+    host = getenv("API_HOST", "0.0.0.0")
+    port = getenv("API_PORT", "5000")
+    app.run(host=host, port=port, threaded=True)
